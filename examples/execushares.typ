@@ -1,0 +1,70 @@
+#import "../lib.typ": *
+#import themes.execushares: *
+
+#import "@preview/numbly:0.1.0": numbly
+
+#show: university-theme.with(
+  aspect-ratio: "16-9",
+  alignment: horizon,
+  config-info(
+    title: [Execushares],
+    subtitle: [A custom modern minimalist touying theme originally made by Kenton Hamaluik],
+    author: [Authors],
+    authors: ([Author A]),
+    date: datetime.today(),
+    institution: [Institution],
+    logo: emoji.school,
+  ),
+)
+
+#set text(font: "Noto Sans")
+#set heading(numbering: numbly("{1}.", default: "1.1"))
+
+#title-slide()
+
+= Outline <touying:hidden>
+
+#outline(title: none, indent: 1em, depth: 1)
+
+= First Section
+
+---
+
+A slide without a title but with some *important* information.
+
+== A long long long long long long long long long long long long long long long long long long long long long long long long Title
+
+=== sdfsdf
+
+A slide with equation:
+
+$ x_(n+1) = (x_n + a / x_n) / 2 $
+
+#lorem(200)
+
+= Second Section
+
+#focus-slide[
+  Wake up!
+]
+
+== Simple Animation
+
+We can use `#pause` to #pause display something later.
+
+#meanwhile
+
+Meanwhile, #pause we can also use `#meanwhile` to display other content synchronously.
+
+#speaker-note[
+  + This is a speaker note.
+  + You won't see it unless you use `config-common(show-notes-on-second-screen: right)`
+]
+
+#show: appendix
+
+= Appendix
+
+---
+
+Please pay attention to the current slide number.
