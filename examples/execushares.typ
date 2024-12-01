@@ -5,7 +5,7 @@
 
 #show: execushares-theme.with(
   aspect-ratio: "16-9",
-  alignment: horizon,
+  alignment: top,
   config-info(
     title: [Execushares],
     subtitle: [A custom modern minimalist touying theme originally made by Kenton Hamaluik],

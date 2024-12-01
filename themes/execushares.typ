@@ -33,21 +33,28 @@
   ..bodies,
 ) = touying-slide-wrapper(self => {
   let header(self) = {
-    set align(horizon)
-    show: components.cell.with(fill: self.colors.primary, inset: 1em)
-    grid(
-      columns: (auto, 1fr, auto),
-      gutter: 1em,
-      text(
-        fill: self.colors.neutral,
-        weight: "bold",
-        size: 1.2em,
-        utils.fit-to-width(100%, grow: false, self.store.header),
-      ),
-      none,
-      text(
-        fill: self.colors.neutral,
-        utils.call-or-display(self, self.store.header-right),
+    set align(top)
+    components.cell(
+      height: self.store.header-height,
+      fill: self.colors.primary,
+      inset: 1em,
+      align(
+        horizon,
+        grid(
+          columns: (auto, 1fr, auto),
+          gutter: 1em,
+          text(
+            fill: self.colors.neutral,
+            weight: "bold",
+            size: 1.2em,
+            utils.fit-to-width(100%, grow: false, self.store.header),
+          ),
+          none,
+          text(
+            fill: self.colors.neutral,
+            utils.call-or-display(self, self.store.header-right),
+          ),
+        ),
       ),
     )
   }
@@ -89,7 +96,7 @@
   let new-setting = body => {
     set align(self.store.alignment)
     show: setting
-    body
+    pad(top: self.store.header-height - 1em, body)
   }
   touying-slide(
     self: self,
@@ -395,6 +402,7 @@
       footer-left: footer-left,
       footer-right: footer-right,
       print-by-in-title-slide: print-by-in-title-slide,
+      header-height: 2.5em,
     ),
     ..args,
   )
