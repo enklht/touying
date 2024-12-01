@@ -88,7 +88,6 @@
   )
   let new-setting = body => {
     set align(self.store.alignment)
-    set text(fill: self.colors.neutral-darker)
     show: setting
     body
   }
@@ -137,34 +136,9 @@
     }
   }
   let body = {
-    set page(
-      margin: 0cm,
-      background: {
-        place(rect(width: 100%, height: 60%, fill: self.colors.primary))
-        if info.logo != none {
-          place(
-            right + top,
-            dx: -1em,
-            dy: 1em,
-            text(fill: self.colors.primary, info.logo),
-          )
-        }
-        if info.date != none {
-          place(
-            bottom + right,
-            dx: -0.5em,
-            dy: -0.5em,
-            text(
-              size: .8em,
-              fill: self.colors.neutral-dark,
-              utils.display-info-date(self),
-            ),
-          )
-        }
-      },
-    )
 
     components.cell(
+      fill: self.colors.primary,
       inset: (x: 1em, top: 1em, bottom: 0.5em),
       height: 60%,
       {
@@ -217,6 +191,29 @@
         }
       },
     )
+
+    if info.logo != none {
+      place(
+        right + top,
+        dx: -1em,
+        dy: 1em,
+        text(fill: self.colors.primary, info.logo),
+      )
+    }
+
+    if info.date != none {
+      place(
+        bottom + right,
+        dx: -0.5em,
+        dy: -0.5em,
+        text(
+          size: .8em,
+          fill: self.colors.neutral-dark,
+          utils.display-info-date(self),
+        ),
+      )
+    }
+
   }
   self = utils.merge-dicts(
     self,
@@ -241,19 +238,20 @@
 /// - body (auto): is the body of the section. This will be passed automatically by Touying.
 #let new-section-slide(level: 1, numbered: true, body) = touying-slide-wrapper(self => {
   let slide-body = {
-    set align(horizon + center)
-    set text(
-      size: 1.5em,
-      fill: self.colors.neutral,
-      weight: "bold",
-    )
-    components.cell(
-      width: 100%,
-      height: 2em,
-      fill: self.colors.primary,
-      utils.display-current-heading(level: level, numbered: numbered),
-    )
-    body
+    {
+      set align(horizon + center)
+      set text(
+        size: 1.5em,
+        fill: self.colors.neutral,
+        weight: "bold",
+      )
+      components.cell(
+        height: 2em,
+        fill: self.colors.primary,
+        utils.display-current-heading(level: level, numbered: numbered),
+      )
+      body
+    }
   }
   self = utils.merge-dicts(
     self,
@@ -367,6 +365,7 @@
     ),
     config-methods(
       init: (self: none, body) => {
+        set page(fill: self.colors.neutral)
         set text(fill: self.colors.neutral-darker, size: 25pt)
         show heading: set text(fill: self.colors.primary)
         set list(

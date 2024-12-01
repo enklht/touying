@@ -3,7 +3,7 @@
 
 #import "@preview/numbly:0.1.0": numbly
 
-#show: university-theme.with(
+#show: execushares-theme.with(
   aspect-ratio: "16-9",
   alignment: horizon,
   config-info(
@@ -17,7 +17,6 @@
   ),
 )
 
-#set text(font: "Noto Sans")
 #set heading(numbering: numbly("{1}.", default: "1.1"))
 
 #title-slide()
