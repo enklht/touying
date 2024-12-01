@@ -96,7 +96,11 @@
   let new-setting = body => {
     set align(self.store.alignment)
     show: setting
-    pad(top: self.store.header-height - 1em, body)
+    pad(
+      top: self.store.header-height - 1em,
+      bottom: 1em,
+      body,
+    )
   }
   touying-slide(
     self: self,
