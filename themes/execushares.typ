@@ -1,6 +1,6 @@
-// University theme
+// Execushares theme
 
-// Originally contributed by Pol Dellaiera - https://github.com/drupol
+// ! comments are not correct
 
 #import "../src/exports.typ": *
 
@@ -199,7 +199,9 @@
         set align(center + horizon)
         if info.authors.len() > 0 {
           set par(spacing: 0.5em)
-          text(0.5em, "by")
+          if self.store.print-by-in-title-slide {
+            text(0.5em, "by")
+          }
           block(
             width: 20% * calc.min(info.authors.len(), 3),
             grid(
@@ -340,7 +342,7 @@
 /// - footer-b (content, function): is the middle part of the footer. Default is `self.info.short-title` or `self.info.title`.
 ///
 /// - footer-c (content, function): is the right part of the footer. Default is `self => h(1fr) + utils.display-info-date(self) + h(1fr) + context utils.slide-counter.display() + " / " + utils.last-slide-number + h(1fr)`.
-#let university-theme(
+#let execushares-theme(
   aspect-ratio: "16-9",
   alignment: horizon,
   progress-bar: true,
@@ -348,6 +350,7 @@
   header-right: self => self.info.logo,
   footer-left: self => self.info.author,
   footer-right: context utils.slide-counter.display() + "/" + utils.last-slide-number,
+  print-by-in-title-slide: true,
   ..args,
   body,
 ) = {
@@ -392,6 +395,7 @@
       header-right: header-right,
       footer-left: footer-left,
       footer-right: footer-right,
+      print-by-in-title-slide: print-by-in-title-slide,
     ),
     ..args,
   )
