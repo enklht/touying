@@ -1044,18 +1044,7 @@
         only(
           self: self,
           subslides,
-          align(
-            position,
-            box(
-              width: max-width,
-              height: max-height,
-              scale(
-                content,
-                x: absolute-size.width,
-                y: absolute-size.height,
-              ),
-            ),
-          ),
+          align(position, content),
         )
       }
     })
