@@ -1036,7 +1036,12 @@
   let subslides = subslides-contents.map(it => it.first())
   let contents = subslides-contents.map(it => it.last())
   if stretch {
-    layout(container-size => {
+    let state-container-size = state("touying-container-size-tmp")
+    place(
+      layout(container-size => state-container-size.update(container-size)),
+    )
+    context {
+      let container-size = state-container-size.get()
       let sizes = contents.map(measure.with(..container-size))
       let max-width = calc.max(..sizes.map(sz => sz.width))
       let max-height = calc.max(..sizes.map(sz => sz.height))
@@ -1044,10 +1049,17 @@
         only(
           self: self,
           subslides,
-          align(position, content),
+          align(
+            position,
+            box(
+              width: max-width,
+              height: max-height,
+              box(..container-size, content),
+            ),
+          ),
         )
       }
-    })
+    }
   } else {
     for (subslides, content) in subslides-contents {
       only(self: self, subslides, content)
