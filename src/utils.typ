@@ -1049,11 +1049,11 @@
         only(
           self: self,
           subslides,
-          align(
-            position,
-            box(
-              width: max-width,
-              height: max-height,
+          box(
+            width: max-width,
+            height: max-height,
+            align(
+              position,
               box(..container-size, content),
             ),
           ),
