@@ -1045,7 +1045,7 @@
       let sizes = contents.map(measure.with(..container-size))
       let max-width = calc.max(..sizes.map(sz => sz.width))
       let max-height = calc.max(..sizes.map(sz => sz.height))
-      for ((subslides, content), absolute-size) in subslides-contents.zip(sizes) {
+      for (subslides, content) in subslides-contents {
         only(
           self: self,
           subslides,
