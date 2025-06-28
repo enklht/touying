@@ -30,10 +30,14 @@
   repeat: auto,
   setting: body => body,
   composer: auto,
+  align: auto,
   ..bodies,
 ) = touying-slide-wrapper(self => {
+  if align != auto {
+    self.store.align = align
+  }
   let header(self) = {
-    set align(top)
+    set std.align(top)
     grid(
       rows: (auto, auto),
       row-gutter: 3mm,
@@ -50,13 +54,13 @@
     )
   }
   let footer(self) = {
-    set align(center + bottom)
+    set std.align(center + bottom)
     set text(size: .4em)
     {
       let cell(..args, it) = components.cell(
         ..args,
         inset: 1mm,
-        align(horizon, text(fill: white, it)),
+        std.align(horizon, text(fill: white, it)),
       )
       show: block.with(width: 100%, height: auto)
       grid(
@@ -75,7 +79,12 @@
       footer: footer,
     ),
   )
-  touying-slide(self: self, config: config, repeat: repeat, setting: setting, composer: composer, ..bodies)
+  let new-setting = body => {
+    show: std.align.with(self.store.align)
+    show: setting
+    body
+  }
+  touying-slide(self: self, config: config, repeat: repeat, setting: new-setting, composer: composer, ..bodies)
 })
 
 
@@ -93,12 +102,20 @@
 ///
 /// #title-slide(subtitle: [Subtitle])
 /// ```
+/// 
+/// - config (dictionary): is the configuration of the slide. Use `config-xxx` to set individual configurations for the slide. To apply multiple configurations, use `utils.merge-dicts` to combine them.
 ///
 /// - extra (string, none): is the extra information for the slide. This can be passed to the `title-slide` function to display additional information on the title slide.
 #let title-slide(
+  config: (:),
   extra: none,
   ..args,
 ) = touying-slide-wrapper(self => {
+  self = utils.merge-dicts(
+    self,
+    config,
+    config-common(freeze-slide-counter: true),
+  )
   let info = self.info + args.named()
   info.authors = {
     let authors = if "authors" in info {
@@ -116,7 +133,7 @@
     if info.logo != none {
       place(right, text(fill: self.colors.primary, info.logo))
     }
-    align(
+    std.align(
       center + horizon,
       {
         block(
@@ -149,11 +166,6 @@
       },
     )
   }
-  self = utils.merge-dicts(
-    self,
-    config-common(freeze-slide-counter: true),
-    config-page(fill: self.colors.neutral-lightest),
-  )
   touying-slide(self: self, body)
 })
 
@@ -162,14 +174,16 @@
 ///
 /// Example: `config-common(new-section-slide-fn: new-section-slide.with(numbered: false))`
 ///
+/// - config (dictionary): is the configuration of the slide. Use `config-xxx` to set individual configurations for the slide. To apply multiple configurations, use `utils.merge-dicts` to combine them.
+/// 
 /// - level (int, none): is the level of the heading.
 ///
 /// - numbered (boolean): is whether the heading is numbered.
 ///
 /// - body (auto): is the body of the section. This will be passed automatically by Touying.
-#let new-section-slide(level: 1, numbered: true, body) = touying-slide-wrapper(self => {
+#let new-section-slide(config: (:), level: 1, numbered: true, body) = touying-slide-wrapper(self => {
   let slide-body = {
-    set align(horizon)
+    set std.align(horizon)
     show: pad.with(20%)
     set text(size: 1.5em, fill: self.colors.primary, weight: "bold")
     stack(
@@ -185,22 +199,20 @@
     )
     body
   }
-  self = utils.merge-dicts(
-    self,
-    config-page(fill: self.colors.neutral-lightest),
-  )
-  touying-slide(self: self, slide-body)
+  touying-slide(self: self, config: config, slide-body)
 })
 
 
 /// Focus on some content.
 ///
 /// Example: `#focus-slide[Wake up!]`
+/// 
+/// - config (dictionary): is the configuration of the slide. Use `config-xxx` to set individual configurations for the slide. To apply multiple configurations, use `utils.merge-dicts` to combine them.
 ///
 /// - background-color (color, none): is the background color of the slide. Default is the primary color.
 ///
 /// - background-img (string, none): is the background image of the slide. Default is none.
-#let focus-slide(background-color: none, background-img: none, body) = touying-slide-wrapper(self => {
+#let focus-slide(config: (:), background-color: none, background-img: none, body) = touying-slide-wrapper(self => {
   let background-color = if background-img == none and background-color == none {
     rgb(self.colors.primary)
   } else {
@@ -222,7 +234,7 @@
     config-page(margin: 1em, ..args),
   )
   set text(fill: self.colors.neutral-lightest, weight: "bold", size: 2em)
-  touying-slide(self: self, align(horizon, body))
+  touying-slide(self: self, std.align(horizon, body))
 })
 
 
@@ -237,13 +249,15 @@
 /// - Check that there are enough rows and columns to fit in all the content blocks.
 ///
 /// That means that `#matrix-slide[...][...]` stacks horizontally and `#matrix-slide(columns: 1)[...][...]` stacks vertically.
-#let matrix-slide(columns: none, rows: none, ..bodies) = touying-slide-wrapper(self => {
+/// 
+/// - config (dictionary): is the configuration of the slide. Use `config-xxx` to set individual configurations for the slide. To apply multiple configurations, use `utils.merge-dicts` to combine them.
+#let matrix-slide(config: (:), columns: none, rows: none, ..bodies) = touying-slide-wrapper(self => {
   self = utils.merge-dicts(
     self,
     config-common(freeze-slide-counter: true),
     config-page(margin: 0em),
   )
-  touying-slide(self: self, composer: components.checkerboard.with(columns: columns, rows: rows), ..bodies)
+  touying-slide(self: self, config: config, composer: components.checkerboard.with(columns: columns, rows: rows), ..bodies)
 })
 
 
@@ -268,6 +282,8 @@
 /// ```
 ///
 /// - aspect-ratio (string): is the aspect ratio of the slides. Default is `16-9`.
+/// 
+/// - align (alignment): is the alignment of the slides. Default is `top`.
 ///
 /// - progress-bar (boolean): is whether to show the progress bar. Default is `true`.
 ///
@@ -284,9 +300,10 @@
 /// - footer-c (content, function): is the right part of the footer. Default is `self => h(1fr) + utils.display-info-date(self) + h(1fr) + context utils.slide-counter.display() + " / " + utils.last-slide-number + h(1fr)`.
 #let university-theme(
   aspect-ratio: "16-9",
+  align: top,
   progress-bar: true,
-  header: utils.display-current-heading(level: 2),
-  header-right: self => utils.display-current-heading(level: 1) + h(.3em) + self.info.logo,
+  header: utils.display-current-heading(level: 2, style: auto),
+  header-right: self => box(utils.display-current-heading(level: 1)) + h(.3em) + self.info.logo,
   footer-columns: (25%, 1fr, 25%),
   footer-a: self => self.info.author,
   footer-b: self => if self.info.short-title == auto {
@@ -317,8 +334,9 @@
     ),
     config-methods(
       init: (self: none, body) => {
-        set text(fill: self.colors.neutral-darkest, size: 25pt)
-        show heading: set text(fill: self.colors.primary)
+        set text(size: 25pt)
+        show heading.where(level: 3): set text(fill: self.colors.primary)
+        show heading.where(level: 4): set text(fill: self.colors.primary)
 
         body
       },
@@ -333,6 +351,7 @@
     ),
     // save the variables for later use
     config-store(
+      align: align,
       progress-bar: progress-bar,
       header: header,
       header-right: header-right,

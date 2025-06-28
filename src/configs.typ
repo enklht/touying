@@ -333,6 +333,8 @@
 /// - uncover (function): The function to uncover content. The default value is `utils.uncover` function.
 ///
 /// - only (function): The function to show only the content. The default value is `utils.only` function.
+/// 
+/// - effect (function): The function to add effect to the content. The default value is `utils.effect`.
 ///
 /// - alternatives-match (function): The function to match alternatives. The default value is `utils.alternatives-match` function.
 ///
@@ -358,6 +360,7 @@
   // dynamic control
   uncover: _default,
   only: _default,
+  effect: _default,
   alternatives-match: _default,
   alternatives: _default,
   alternatives-fn: _default,
@@ -377,6 +380,7 @@
       cover: cover,
       uncover: uncover,
       only: only,
+      effect: effect,
       alternatives-match: alternatives-match,
       alternatives: alternatives,
       alternatives-fn: alternatives-fn,
@@ -572,6 +576,8 @@
 ///     - x: The horizontal margins.
 ///     - y: The vertical margins.
 ///     - rest: The margins on all sides except those for which the dictionary explicitly sets a size.
+/// 
+/// - numbering (string, function): The numbering style of the page. The default value is `"1"`.
 ///
 ///   The values for left and right are mutually exclusive with the values for inside and outside.
 #let config-page(
@@ -580,6 +586,7 @@
   footer: _default,
   fill: _default,
   margin: _default,
+  numbering: _default,
   ..args,
 ) = {
   assert(args.pos().len() == 0, message: "Unexpected positional arguments.")
@@ -590,6 +597,7 @@
       footer: footer,
       fill: fill,
       margin: margin,
+      numbering: numbering,
     )) + args.named(),
   )
 }
@@ -652,6 +660,7 @@
     // dynamic control
     uncover: utils.uncover,
     only: utils.only,
+    effect: utils.effect,
     alternatives-match: utils.alternatives-match,
     alternatives: utils.alternatives,
     alternatives-fn: utils.alternatives-fn,
@@ -707,8 +716,8 @@
     paper: "presentation-16-9",
     header: none,
     footer: none,
-    fill: rgb("#ffffff"),
     margin: (x: 3em, y: 2.8em),
+    numbering: "1",
   ),
   config-store(),
 )

@@ -1,11 +1,12 @@
 # ![logo](https://github.com/user-attachments/assets/58a91b14-ae1a-49e2-a3e7-5e3a148e2ba5)
 
-[Touying](https://github.com/touying-typ/touying) (投影 in chinese, /tóuyǐng/, meaning projection) is a user-friendly, powerful and efficient package for creating presentation slides in Typst. Partial code is inherited from [Polylux](https://github.com/andreasKroepelin/polylux). Therefore, some concepts and APIs remain consistent with Polylux.
+[Touying](https://github.com/touying-typ/touying) (投影 in chinese, /tóuyǐng/, meaning projection) is a user-friendly, powerful and efficient package for creating presentation slides in Typst. Partial code is inherited from [Polylux](https://github.com/andreasKroepelin/polylux) like `#only()` and `#uncover()`.
 
 Touying provides automatically injected global configurations, which is convenient for configuring themes. Besides, Touying does not rely on `counter` and `context` to implement `#pause`, resulting in better performance.
 
 If you like it, consider [giving a star on GitHub](https://github.com/touying-typ/touying). Touying is a community-driven project, feel free to suggest any ideas and contribute.
 
+[![Typst Universe](https://img.shields.io/badge/dynamic/xml?url=https%3A%2F%2Ftypst.app%2Funiverse%2Fpackage%2Ftouying&query=%2Fhtml%2Fbody%2Fdiv%2Fmain%2Fdiv%5B2%5D%2Faside%2Fsection%5B2%5D%2Fdl%2Fdd%5B3%5D&logo=typst&label=universe&color=%2339cccc)](https://typst.app/universe/package/touying)
 [![Book badge](https://img.shields.io/badge/docs-book-green)](https://touying-typ.github.io/)
 [![Gallery badge](https://img.shields.io/badge/docs-gallery-orange)](https://github.com/touying-typ/touying/wiki)
 ![GitHub](https://img.shields.io/github/license/touying-typ/touying)
@@ -101,7 +102,7 @@ Before you begin, make sure you have installed the Typst environment. If not, yo
 To use Touying, you only need to include the following code in your document:
 
 ```typst
-#import "@preview/touying:0.5.3": *
+#import "@preview/touying:0.6.1": *
 #import themes.simple: *
 
 #show: simple-theme.with(aspect-ratio: "16-9")
@@ -129,33 +130,24 @@ It's simple. Congratulations on creating your first Touying slide! 🎉
 In fact, Touying provides various styles for writing slides. For example, the above example uses first-level and second-level titles to create new slides. However, you can also use the `#slide[..]` format to access more powerful features provided by Touying.
 
 ```typst
-#import "@preview/touying:0.5.3": *
+#import "@preview/touying:0.6.1": *
 #import themes.university: *
-#import "@preview/cetz:0.3.1"
-#import "@preview/fletcher:0.5.2" as fletcher: node, edge
-#import "@preview/ctheorems:1.1.3": *
+#import "@preview/cetz:0.3.2"
+#import "@preview/fletcher:0.5.4" as fletcher: node, edge
 #import "@preview/numbly:0.1.0": numbly
+#import "@preview/theorion:0.3.2": *
+#import cosmos.clouds: *
+#show: show-theorion
 
 // cetz and fletcher bindings for touying
 #let cetz-canvas = touying-reducer.with(reduce: cetz.canvas, cover: cetz.draw.hide.with(bounds: true))
 #let fletcher-diagram = touying-reducer.with(reduce: fletcher.diagram, cover: fletcher.hide)
 
-// Theorems configuration by ctheorems
-#show: thmrules.with(qed-symbol: $square$)
-#let theorem = thmbox("theorem", "Theorem", fill: rgb("#eeffee"))
-#let corollary = thmplain(
-  "corollary",
-  "Corollary",
-  base: "theorem",
-  titlefmt: strong
-)
-#let definition = thmbox("definition", "Definition", inset: (x: 1.2em, top: 1em))
-#let example = thmplain("example", "Example").with(numbering: none)
-#let proof = thmproof("proof", "Proof")
-
 #show: university-theme.with(
   aspect-ratio: "16-9",
+  // align: horizon,
   // config-common(handout: true),
+  config-common(frozen-counters: (theorem-counter,)),  // freeze theorem counter for animation
   config-info(
     title: [Title],
     subtitle: [Subtitle],
@@ -207,17 +199,20 @@ use #only("2-")[`#only` function] for not reserving space,
 
 == Callback Style Animation
 
-#slide(repeat: 3, self => [
-  #let (uncover, only, alternatives) = utils.methods(self)
+#slide(
+  repeat: 3,
+  self => [
+    #let (uncover, only, alternatives) = utils.methods(self)
 
-  At subslide #self.subslide, we can
+    At subslide #self.subslide, we can
 
-  use #uncover("2-")[`#uncover` function] for reserving space,
+    use #uncover("2-")[`#uncover` function] for reserving space,
 
-  use #only("2-")[`#only` function] for not reserving space,
+    use #only("2-")[`#only` function] for not reserving space,
 
-  #alternatives[call `#only` multiple times \u{2717}][use `#alternatives` function #sym.checkmark] for choosing one of the alternatives.
-])
+    #alternatives[call `#only` multiple times \u{2717}][use `#alternatives` function #sym.checkmark] for choosing one of the alternatives.
+  ],
+)
 
 
 == Math Equation Animation
@@ -225,8 +220,8 @@ use #only("2-")[`#only` function] for not reserving space,
 Equation with `pause`:
 
 $
-  f(x) &= pause x^2 + 2x + 1  \
-       &= pause (x + 1)^2  \
+  f(x) &= pause x^2 + 2x + 1 \
+  &= pause (x + 1)^2 \
 $
 
 #meanwhile
@@ -244,18 +239,18 @@ CeTZ Animation in Touying:
 
 #cetz-canvas({
   import cetz.draw: *
-  
-  rect((0,0), (5,5))
+
+  rect((0, 0), (5, 5))
 
   (pause,)
 
-  rect((0,0), (1,1))
-  rect((1,1), (2,2))
-  rect((2,2), (3,3))
+  rect((0, 0), (1, 1))
+  rect((1, 1), (2, 2))
+  rect((2, 2), (3, 3))
 
   (pause,)
 
-  line((0,0), (2.5, 2.5), name: "line")
+  line((0, 0), (2.5, 2.5), name: "line")
 })
 
 
@@ -267,16 +262,16 @@ Fletcher Animation in Touying:
   node-stroke: .1em,
   node-fill: gradient.radial(blue.lighten(80%), blue, center: (30%, 20%), radius: 80%),
   spacing: 4em,
-  edge((-1,0), "r", "-|>", `open(path)`, label-pos: 0, label-side: center),
-  node((0,0), `reading`, radius: 2em),
-  edge((0,0), (0,0), `read()`, "--|>", bend: 130deg),
+  edge((-1, 0), "r", "-|>", `open(path)`, label-pos: 0, label-side: center),
+  node((0, 0), `reading`, radius: 2em),
+  edge((0, 0), (0, 0), `read()`, "--|>", bend: 130deg),
   pause,
   edge(`read()`, "-|>"),
-  node((1,0), `eof`, radius: 2em),
+  node((1, 0), `eof`, radius: 2em),
   pause,
   edge(`close()`, "-|>"),
-  node((2,0), `closed`, radius: 2em, extrude: (-2.5, 0)),
-  edge((0,0), (2,0), `close()`, "-|>", bend: -40deg),
+  node((2, 0), `closed`, radius: 2em, extrude: (-2.5, 0)),
+  edge((0, 0), (2, 0), `close()`, "-|>", bend: -40deg),
 )
 
 
@@ -293,13 +288,14 @@ Fletcher Animation in Touying:
   @cor_largest_prime shows that this list is not exhaustive!
 ]
 
-#theorem("Euclid")[
+#theorem(title: "Euclid")[
   There are infinitely many primes.
 ]
+#pagebreak(weak: true)
 #proof[
   Suppose to the contrary that $p_1, p_2, dots, p_n$ is a finite enumeration
   of all primes. Set $P = p_1 p_2 dots p_n$. Since $P + 1$ is not in our list,
-  it cannot be prime. Thus, some prime factor $p_j$ divides $P + 1$.  Since
+  it cannot be prime. Thus, some prime factor $p_j$ divides $P + 1$. Since
   $p_j$ also divides $P$, it must divide the difference $(P + 1) - P = 1$, a
   contradiction.
 ]
@@ -317,7 +313,7 @@ Fletcher Animation in Touying:
 
 #proof[
   For any $n > 2$, consider $
-    n! + 2, quad n! + 3, quad ..., quad n! + n #qedhere
+    n! + 2, quad n! + 3, quad ..., quad n! + n
   $
 ]
 
@@ -347,7 +343,7 @@ Fletcher Animation in Touying:
 Please pay attention to the current slide number.
 ```
 
-![example](https://github.com/user-attachments/assets/3488f256-a0b3-43d0-a266-009d9d0a7bd3)
+![image](https://github.com/user-attachments/assets/b1dfc4d9-e263-46ff-8588-a0635870e370)
 
 
 ## Acknowledgements
@@ -355,6 +351,7 @@ Please pay attention to the current slide number.
 Thanks to...
 
 - [@andreasKroepelin](https://github.com/andreasKroepelin) for the `polylux` package
+- [@enklht](https://github.com/enklht) for many fixes and improvements
 - [@Enivex](https://github.com/Enivex) for the `metropolis` theme
 - [@drupol](https://github.com/drupol) for the `university` theme
 - [@pride7](https://github.com/pride7) for the `aqua` theme

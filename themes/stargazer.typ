@@ -4,8 +4,6 @@
 
 #import "../src/exports.typ": *
 
-#let _typst-builtin-align = align
-
 #let _tblock(self: none, title: none, it) = {
   grid(
     columns: 1,
@@ -82,8 +80,6 @@
   if align != auto {
     self.store.align = align
   }
-  // restore typst builtin align function
-  let align = _typst-builtin-align
   if title != auto {
     self.store.title = title
   }
@@ -93,13 +89,8 @@
   if footer != auto {
     self.store.footer = footer
   }
-  let self = utils.merge-dicts(
-    self,
-    config-page(fill: self.colors.neutral-lightest),
-  )
   let new-setting = body => {
-    show: align.with(self.store.align)
-    set text(fill: self.colors.neutral-darkest)
+    show: std.align.with(self.store.align)
     show: setting
     body
   }
@@ -121,7 +112,13 @@
 ///
 /// #title-slide(subtitle: [Subtitle])
 /// ```
-#let title-slide(..args) = touying-slide-wrapper(self => {
+/// 
+/// - config (dictionary): The configuration of the slide. You can use `config-xxx` to set the configuration of the slide. For more several configurations, you can use `utils.merge-dicts` to merge them.
+#let title-slide(config: (:), ..args) = touying-slide-wrapper(self => {
+  self = utils.merge-dicts(
+    self,
+    config,
+  )
   self.store.title = none
   let info = self.info + args.named()
   info.authors = {
@@ -137,7 +134,7 @@
     }
   }
   let body = {
-    show: align.with(center + horizon)
+    show: std.align.with(center + horizon)
     block(
       fill: self.colors.primary,
       inset: 1.5em,
@@ -170,16 +167,14 @@
       text(size: 1.0em, utils.display-info-date(self))
     }
   }
-  self = utils.merge-dicts(
-    self,
-    config-page(fill: self.colors.neutral-lightest),
-  )
   touying-slide(self: self, body)
 })
 
 
 
 /// Outline slide for the presentation.
+/// 
+/// - config (dictionary): is the configuration of the slide. You can use `config-xxx` to set the configuration of the slide. For more several configurations, you can use `utils.merge-dicts` to merge them.
 ///
 /// - title (string): is the title of the outline. Default is `utils.i18n-outline-title`.
 ///
@@ -187,19 +182,17 @@
 ///
 /// - numbered (boolean): is whether the outline is numbered. Default is `true`.
 #let outline-slide(
+  config: (:),
   title: utils.i18n-outline-title,
   numbered: true,
   level: none,
   ..args,
 ) = touying-slide-wrapper(self => {
   self.store.title = title
-  self = utils.merge-dicts(
-    self,
-    config-page(fill: self.colors.neutral-lightest),
-  )
   touying-slide(
     self: self,
-    align(
+    config: config,
+    std.align(
       self.store.align,
       components.adaptive-columns(
         text(
@@ -224,6 +217,8 @@
 /// New section slide for the presentation. You can update it by updating the `new-section-slide-fn` argument for `config-common` function.
 ///
 /// Example: `config-common(new-section-slide-fn: new-section-slide.with(numbered: false))`
+/// 
+/// - config (dictionary): is the configuration of the slide. You can use `config-xxx` to set the configuration of the slide. For more several configurations, you can use `utils.merge-dicts` to merge them.
 ///
 /// - title (content, function): is the title of the section. The default is `utils.i18n-outline-title`.
 ///
@@ -233,21 +228,24 @@
 ///
 /// - body (none): is the body of the section. It will be passed by touying automatically.
 #let new-section-slide(
+  config: (:),
   title: utils.i18n-outline-title,
   level: 1,
   numbered: true,
   ..args,
   body,
-) = outline-slide(title: title, level: level, numbered: numbered, ..args, body)
+) = outline-slide(config: config, title: title, level: level, numbered: numbered, ..args, body)
 
 
 
 /// Focus on some content.
 ///
 /// Example: `#focus-slide[Wake up!]`
+/// 
+/// - config (dictionary): is the configuration of the slide. You can use `config-xxx` to set the configuration of the slide. For more several configurations, you can use `utils.merge-dicts` to merge them.
 ///
 /// - align (alignment): is the alignment of the content. The default is `horizon + center`.
-#let focus-slide(align: horizon + center, body) = touying-slide-wrapper(self => {
+#let focus-slide(config: (:), align: horizon + center, body) = touying-slide-wrapper(self => {
   self = utils.merge-dicts(
     self,
     config-common(freeze-slide-counter: true),
@@ -259,18 +257,20 @@
     ),
   )
   set text(fill: self.colors.neutral-lightest, weight: "bold", size: 1.5em)
-  touying-slide(self: self, _typst-builtin-align(align, body))
+  touying-slide(self: self, config: config, std.align(align, body))
 })
 
 
 /// End slide for the presentation.
 ///
+/// - config (dictionary): is the configuration of the slide. You can use `config-xxx` to set the configuration of the slide. For more several configurations, you can use `utils.merge-dicts` to merge them.
+/// 
 /// - title (string): is the title of the slide. The default is `none`.
 ///
 /// - body (array): is the content of the slide.
-#let ending-slide(title: none, body) = touying-slide-wrapper(self => {
+#let ending-slide(config: (:), title: none, body) = touying-slide-wrapper(self => {
   let content = {
-    set align(center + horizon)
+    set std.align(center + horizon)
     if title != none {
       block(
         fill: self.colors.tertiary,
@@ -281,7 +281,7 @@
     }
     body
   }
-  touying-slide(self: self, content)
+  touying-slide(self: self, config: config, content)
 })
 
 
@@ -358,7 +358,7 @@
   body,
 ) = {
   let header(self) = {
-    set _typst-builtin-align(top)
+    set std.align(top)
     grid(
       rows: (auto, auto),
       utils.call-or-display(self, self.store.navigation),
@@ -367,7 +367,7 @@
   }
   let footer(self) = {
     set text(size: .5em)
-    set _typst-builtin-align(center + bottom)
+    set std.align(center + bottom)
     grid(
       rows: (auto, auto),
       utils.call-or-display(self, self.store.footer),
@@ -450,7 +450,7 @@
           outset: 0mm,
           fill: fill,
           stroke: none,
-          _typst-builtin-align(horizon, text(fill: self.colors.neutral-lightest, it)),
+          std.align(horizon, text(fill: self.colors.neutral-lightest, it)),
         )
         grid(
           columns: self.store.footer-columns,

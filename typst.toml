@@ -1,12 +1,12 @@
 [package]
 name = "touying"
-version = "0.5.3"
+version = "0.6.1"
 entrypoint = "lib.typ"
-authors = ["OrangeX4", "Andreas Kröpelin", "ntjess", "Enivex", "Pol Dellaiera", "pride7", "Coekjan"]
+authors = ["OrangeX4", "enklht", "Andreas Kröpelin", "ntjess", "Enivex", "Pol Dellaiera", "pride7", "Coekjan"]
 license = "MIT"
 description = "A powerful package for creating presentation slides in Typst."
 repository = "https://github.com/touying-typ/touying"
-keywords = ["presentation", "slides", "lecture", "touying"]
+keywords = ["presentation", "pre", "slide", "slides", "lecture", "touying", "beamer", "talk"]
 categories = ["presentation"]
 exclude = ["examples"]
-compiler = "0.11.0"
+compiler = "0.12.0"

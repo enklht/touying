@@ -86,16 +86,11 @@
   let self = utils.merge-dicts(
     self,
     config-page(
-      fill: self.colors.neutral-lightest,
       header: dewdrop-header,
       footer: dewdrop-footer,
     ),
     config-common(subslide-preamble: self.store.subslide-preamble),
   )
-  let new-setting(body) = {
-    set text(fill: self.colors.neutral-darkest)
-    setting(body)
-  }
   touying-slide(self: self, config: config, repeat: repeat, setting: setting, composer: composer, ..bodies)
 })
 
@@ -115,11 +110,20 @@
 /// #title-slide(subtitle: [Subtitle], extra: [Extra information])
 /// ```
 ///
+/// - config (dictionary): The configuration of the slide. You can use `config-xxx` to set the configuration of the slide. For more several configurations, you can use `utils.merge-dicts` to merge them.
+/// 
 /// - extra (string, none): The extra information you want to display on the title slide.
 #let title-slide(
+  config: (:),
   extra: none,
   ..args,
 ) = touying-slide-wrapper(self => {
+  self = utils.merge-dicts(
+    self,
+    config,
+    config-common(freeze-slide-counter: true),
+    config-page(margin: 0em),
+  )
   let info = self.info + args.named()
   let body = {
     set text(fill: self.colors.neutral-darkest)
@@ -158,26 +162,25 @@
       },
     )
   }
-  self = utils.merge-dicts(
-    self,
-    config-common(freeze-slide-counter: true),
-    config-page(fill: self.colors.neutral-lightest, margin: 0em),
-  )
   touying-slide(self: self, body)
 })
 
 
 /// Outline slide for the presentation.
-#let outline-slide(title: utils.i18n-outline-title, ..args) = touying-slide-wrapper(self => {
+/// 
+/// - config (dictionary): The configuration of the slide. You can use `config-xxx` to set the configuration of the slide. For more several configurations, you can use `utils.merge-dicts` to merge them.
+/// 
+/// - title (string): The title of the slide. Default is `utils.i18n-outline-title`.
+#let outline-slide(config: (:), title: utils.i18n-outline-title, ..args) = touying-slide-wrapper(self => {
   self = utils.merge-dicts(
     self,
     config-page(
-      fill: self.colors.neutral-lightest,
       footer: dewdrop-footer,
     ),
   )
   touying-slide(
     self: self,
+    config: config,
     components.adaptive-columns(
       start: text(
         1.2em,
@@ -197,20 +200,22 @@
 /// New section slide for the presentation. You can update it by updating the `new-section-slide-fn` argument for `config-common` function.
 ///
 /// Example: `config-common(new-section-slide-fn: new-section-slide.with(numbered: false))`
+/// 
+/// - config (dictionary): The configuration of the slide. You can use `config-xxx` to set the configuration of the slide. For more several configurations, you can use `utils.merge-dicts` to merge them.
 ///
 /// - title (string): The title of the slide. Default is `utils.i18n-outline-title`.
 ///
 /// - body (array): The contents of the slide.
-#let new-section-slide(title: utils.i18n-outline-title, ..args, body) = touying-slide-wrapper(self => {
+#let new-section-slide(config: (:), title: utils.i18n-outline-title, ..args, body) = touying-slide-wrapper(self => {
   self = utils.merge-dicts(
     self,
     config-page(
-      fill: self.colors.neutral-lightest,
       footer: dewdrop-footer,
     ),
   )
   touying-slide(
     self: self,
+    config: config,
     components.adaptive-columns(
       start: text(
         1.2em,
@@ -236,14 +241,16 @@
 /// Focus on some content.
 ///
 /// Example: `#focus-slide[Wake up!]`
-#let focus-slide(body) = touying-slide-wrapper(self => {
+/// 
+/// - config (dictionary): The configuration of the slide. You can use `config-xxx` to set the configuration of the slide. For more several configurations, you can use `utils.merge-dicts` to merge them.
+#let focus-slide(config: (:), body) = touying-slide-wrapper(self => {
   self = utils.merge-dicts(
     self,
     config-common(freeze-slide-counter: true),
     config-page(fill: self.colors.primary, margin: 2em),
   )
   set text(fill: self.colors.neutral-lightest, size: 1.5em)
-  touying-slide(self: self, align(horizon + center, body))
+  touying-slide(self: self, config: config, align(horizon + center, body))
 })
 
 
@@ -320,7 +327,7 @@
   primary: rgb("#0c4842"),
   alpha: 60%,
   subslide-preamble: self => block(
-    text(1.2em, weight: "bold", fill: self.colors.primary, utils.display-current-heading(depth: self.slide-level)),
+    text(1.2em, weight: "bold", fill: self.colors.primary, utils.display-current-heading(depth: self.slide-level, style: auto)),
   ),
   ..args,
   body,

@@ -362,6 +362,8 @@
 ///
 /// - style (function): The style of the heading. If `style` is a function, it will use the function to style the heading. For example, `style: current-heading => current-heading.body`.
 ///
+///   If you set it to `style: auto`, it will could be controlled by `show heading` rule.
+///
 /// -> content
 #let display-current-heading(
   self: none,
@@ -370,10 +372,13 @@
   depth: 9999,
   style: (setting: body => body, numbered: true, current-heading) => setting({
     if numbered and current-heading.numbering != none {
-      _typst-builtin-numbering(
-        current-heading.numbering,
-        ..counter(heading).at(current-heading.location()),
-      ) + h(.3em)
+      (
+        _typst-builtin-numbering(
+          current-heading.numbering,
+          ..counter(heading).at(current-heading.location()),
+        )
+          + h(.3em)
+      )
     }
     current-heading.body
   }),
@@ -384,6 +389,15 @@
     if current-heading != none {
       if style == none {
         current-heading
+      } else if style == auto {
+        let current-level = current-heading.level
+        if current-level == 1 {
+          text(.715em, current-heading)
+        } else if current-level == 2 {
+          text(.835em, current-heading)
+        } else {
+          current-heading
+        }
       } else {
         style(..setting-args, current-heading)
       }
@@ -423,7 +437,7 @@
 ///
 /// - depth (int): The maximum depth of the heading to search. Usually, it should be set as slide-level.
 ///
-/// - sty (function): The style of the heading. If `sty` is a function, it will use the function to style the heading. For example, `sty: current-heading => current-heading.body`.
+/// - style (function): The style of the heading. If `style` is a function, it will use the function to style the heading. For example, `style: (self: none, current-heading) => utils.short-heading(self: self, current-heading)`.
 ///
 /// -> content
 #let display-current-short-heading(
@@ -432,19 +446,17 @@
   hierachical: true,
   depth: 9999,
   setting: body => body,
-  ..sty,
+  style: (self: none, current-heading) => short-heading(self: self, current-heading),
+  ..setting-args,
 ) = (
   context {
-    let sty = if sty.pos().len() > 1 {
-      sty.pos().at(0)
-    } else {
-      current-heading => {
-        short-heading(self: self, current-heading)
-      }
-    }
     let current-heading = current-heading(level: level, hierachical: hierachical, depth: depth)
     if current-heading != none {
-      setting(sty(current-heading))
+      if style == none {
+        current-heading
+      } else {
+        style(self: self, ..setting-args, current-heading)
+      }
     }
   }
 )
@@ -484,11 +496,16 @@
   } else if type(it) == content {
     if it.func() == raw {
       if it.block {
-        "\n" + indent * " " + "```" + it.lang + it
-          .text
-          .split("\n")
-          .map(l => "\n" + indent * " " + l)
-          .sum(default: "") + "\n" + indent * " " + "```"
+        (
+          "\n"
+            + indent * " "
+            + "```"
+            + it.lang
+            + it.text.split("\n").map(l => "\n" + indent * " " + l).sum(default: "")
+            + "\n"
+            + indent * " "
+            + "```"
+        )
       } else {
         "`" + it.text + "`"
       }
@@ -693,7 +710,9 @@
 /// -> content
 #let cover-with-rect(..cover-args, fill: auto, inline: true, body) = {
   if fill == auto {
-    panic("`auto` fill value is not supported until typst provides utilities to" + " retrieve the current page background")
+    panic(
+      "`auto` fill value is not supported until typst provides utilities to" + " retrieve the current page background",
+    )
   }
   if type(fill) == str {
     fill = rgb(fill)
@@ -752,11 +771,10 @@
 /// Cover content with a transparent rectangle.
 ///
 /// Example: `config-methods(cover: utils.semi-transparent-cover)`
-#let semi-transparent-cover(self: none, constructor: rgb, alpha: 85%, body) = {
+#let semi-transparent-cover(self: none, alpha: 85%, body) = {
   cover-with-rect(
     fill: update-alpha(
-      constructor: constructor,
-      self.page.fill,
+      self.page.at("fill", default: rgb("#ffffff")),
       alpha,
     ),
     body,
@@ -768,14 +786,11 @@
   if type(it) != content {
     return false
   }
-  if it.func() == text {
+  if it.func() in (text, math.equation) {
     return true
   }
   if it.has("body") {
     return _contains-text(it.body, transparentize-table)
-  }
-  if it.has("base") {
-    return _contains-text(it.base, transparentize-table)
   }
   if it.has("child") {
     return _contains-text(it.child, transparentize-table)
@@ -793,6 +808,15 @@
   return false
 }
 
+/// Cover content with a text-color-changing mechanism.
+///
+/// Example: `config-methods(cover: utils.color-changing-cover.with(color: gray))`
+///
+/// - color (color): The color to change to. Default is `gray`.
+///
+/// - fallback-hide (boolean): Indicates whether the content should be hidden if it does not contain text. Default is `true`.
+///
+/// - transparentize-table (boolean): Indicates whether the content should be transparentized if it is a table. Default is `false`.
 #let color-changing-cover(
   self: none,
   color: gray,
@@ -800,17 +824,24 @@
   transparentize-table: false,
   it,
 ) = {
-  if _contains-text(it, transparentize-table) {
-    set text(color)
-    show text: set text(color)
-    it
-  } else if fallback-hide {
+  show regex(".+"): set text(color)
+  if not _contains-text(it, transparentize-table) {
     hide(it)
   } else {
     it
   }
 }
 
+
+/// Cover content with an alpha-changing mechanism.
+///
+/// Example: `config-methods(cover: utils.alpha-changing-cover.with(alpha: 25%))`
+///
+/// - alpha (percentage): The alpha value to change to. Default is `25%`.
+///
+/// - fallback-hide (boolean): Indicates whether the content should be hidden if it does not contain text. Default is `true`.
+///
+/// - transparentize-table (boolean): Indicates whether the content should be transparentized if it is a table. Default is `false`.
 #let alpha-changing-cover(
   self: none,
   alpha: 25%,
@@ -818,18 +849,16 @@
   transparentize-table: false,
   it,
 ) = context {
-  if _contains-text(it, transparentize-table) {
-    set text(text.fill.transparentize(100% - alpha))
-    show text: it => context {
-      text(update-alpha(text.fill, alpha), it)
-    }
-    it
-  } else if fallback-hide {
+  show regex(".+"): it => context {
+    text(update-alpha(text.fill, alpha), it)
+  }
+  if not _contains-text(it, transparentize-table) {
     hide(it)
   } else {
     it
   }
 }
+
 
 /// Alert content with a primary color.
 ///
@@ -891,7 +920,7 @@
 /// - visible-subslides (int, array): A single integer or an array of integers.
 ///    or a string that specifies the visible subslides
 ///
-///    Read [polylux book](https://polylux.dev/book/dynamic/complex.html)
+///    Read #link("https://polylux.dev/book/dynamic/complex.html", "polylux book")
 ///
 ///    The simplest extension is to use an array, such as `(1, 2, 4)` indicating that
 ///    slides 1, 2, and 4 are visible. This is equivalent to the string `"1, 2, 4"`.
@@ -954,13 +983,49 @@
   }
 }
 
+/// Take effect in some subslides.
+///
+/// Example: `#effect(text.with(fill: red), "2-")[Something]` will display `[Something]` if the current slide is 2 or later.
+///
+/// You can also add an abbreviation by using `#let effect-red = effect.with(text.with(fill: red))` for your own effects.
+///
+/// - fn (function): The function that will be called in the subslide.
+///      Or you can use a method function like `(self: none) => { .. }`.
+///
+/// - visible-subslides (int, array, string): `visible-subslides` is a single integer, an array of integers,
+///    or a string that specifies the visible subslides
+///
+///    Read #link("https://polylux.dev/book/dynamic/complex.html", "polylux book")
+///
+///    The simplest extension is to use an array, such as `(1, 2, 4)` indicating that
+///    slides 1, 2, and 4 are visible. This is equivalent to the string `"1, 2, 4"`.
+///
+///    You can also use more convenient and complex strings to specify visible slides.
+///
+///    For example, "-2, 4, 6-8, 10-" means slides 1, 2, 4, 6, 7, 8, 10, and slides after 10 are visible.
+///
+/// - cont (content): The content to display when the content is visible in the subslide.
+///
+/// - is-method (boolean): A boolean indicating whether the function is a method function. Default is `false`.
+#let effect(self: none, fn, visible-subslides, cont, is-method: false) = {
+  if is-method {
+    fn
+  } else {
+    if check-visible(self.subslide, visible-subslides) {
+      fn(cont)
+    } else {
+      cont
+    }
+  }
+}
+
 /// Uncover content in some subslides. Reserved space when hidden (like `#hide()`).
 ///
 /// Example: `uncover("2-")[abc]` will display `[abc]` if the current slide is 2 or later
 ///
 /// - visible-subslides (int, array, string): A single integer, an array of integers, or a string that specifies the visible subslides.
 ///
-///   Read [polylux book](https://polylux.dev/book/dynamic/complex.html).
+///   Read #link("https://polylux.dev/book/dynamic/complex.html", "polylux book").
 ///
 ///   The simplest extension is to use an array, such as `(1, 2, 4)`, indicating that
 ///   slides 1, 2, and 4 are visible. This is equivalent to the string `"1, 2, 4"`.
@@ -987,7 +1052,7 @@
 ///
 /// - visible-subslides (int, array, string): A single integer, an array of integers, or a string that specifies the visible subslides.
 ///
-///   Read [polylux book](https://polylux.dev/book/dynamic/complex.html).
+///   Read #link("https://polylux.dev/book/dynamic/complex.html", "polylux book").
 ///
 ///   The simplest extension is to use an array, such as `(1, 2, 4)`, indicating that
 ///   slides 1, 2, and 4 are visible. This is equivalent to the string `"1, 2, 4"`.
@@ -1021,12 +1086,12 @@
 ///
 /// - position (alignment): The position of the content. Default is `bottom + left`.
 ///
-/// - stretch (boolean): A boolean indicating whether the content should be stretched to the maximum width and height. Default is `true`.
+/// - stretch (boolean): A boolean indicating whether the content should be stretched to the maximum width and height. Default is `false`.
 ///
 ///   Important: If you use a zero-length content like a context expression, you should set `stretch: false`.
 ///
 /// -> content
-#let alternatives-match(self: none, subslides-contents, position: bottom + left, stretch: true) = {
+#let alternatives-match(self: none, subslides-contents, position: bottom + left, stretch: false) = {
   let subslides-contents = if type(subslides-contents) == dictionary {
     subslides-contents.pairs()
   } else {
@@ -1070,7 +1135,7 @@
 ///
 /// - position (string): The position of the content. Default is `bottom + left`.
 ///
-/// - stretch (boolean): A boolean indicating whether the content should be stretched to the maximum width and height. Default is `true`.
+/// - stretch (boolean): A boolean indicating whether the content should be stretched to the maximum width and height. Default is `false`.
 ///
 ///   Important: If you use a zero-length content like a context expression, you should set `stretch: false`.
 ///
@@ -1103,7 +1168,7 @@
 ///
 /// - position (string): The position of the content. Default is `bottom + left`.
 ///
-/// - stretch (boolean): A boolean indicating whether the content should be stretched to the maximum width and height. Default is `true`.
+/// - stretch (boolean): A boolean indicating whether the content should be stretched to the maximum width and height. Default is `false`.
 ///
 ///   Important: If you use a zero-length content like a context expression, you should set `stretch: false`.
 ///
@@ -1149,7 +1214,7 @@
 ///
 /// - position (string): The position of the content. Default is `bottom + left`.
 ///
-/// - stretch (boolean): A boolean indicating whether the content should be stretched to the maximum width and height. Default is `true`.
+/// - stretch (boolean): A boolean indicating whether the content should be stretched to the maximum width and height. Default is `false`.
 ///
 ///   Important: If you use a zero-length content like a context expression, you should set `stretch: false`.
 ///
